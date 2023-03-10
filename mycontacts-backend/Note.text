@@ -1,3 +1,19 @@
 to install .env
 
 command : npm i dotenv
+
+
+to instal async handler that will handle all ou promise
+
+command: npm i express-async-handler
+
+
+We can collect our data from mongodb via a plugin from VScode 
+here are also various ways to collect data such  Shell, Compass etc.
+
+install MongoDB for VS Code.
+
+
+In other to setup Mongodb database to our project we need to install mongoose package
+
+command: npm i mongoose
