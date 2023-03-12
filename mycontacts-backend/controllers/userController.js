@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler')
-const bycrpt = require('bcrypt') // bcrypt to protect password
+const bycrpt = require('bcrypt') // bcrypt to protect  password
+const jwt = require("jsonwebtoken")
 const User = require("../models/userModel")
+
 
 //@desc Register a user
 //@route POST /api/users/register
@@ -26,7 +28,8 @@ const registerUser = asyncHandler( async (req, res) => {
      }
 
 
-     // create a Hash password - Hashed password will be stored to the database
+     // create a Hash password - Hashed password will be stored
+     // to the database instead of the real password
      const hashedPassword = await bycrpt.hash(password, 10);
      console.log("Hashed Password", hashedPassword)
 
@@ -54,7 +57,34 @@ const registerUser = asyncHandler( async (req, res) => {
 //@access public
 
 const loginUser = asyncHandler( async (req, res) => {
-    res.status(200).json({message: "Login the user"})
+
+    const {email, password} = req.body
+
+    if(!email || !password){
+          res.status(400) //  validation failed
+          throw new Error('All fields are mandatory')
+    }
+    
+    // If the user already exist find by email
+    const user = await User.findOne({email})
+    // compare password with hashedpassword with bycrpt
+    if(user && (await bycrpt.compare(password, user.password))){
+        const accessToken = jwt.sign({
+              user: {
+                  username: user.username,
+                  email: user.email,
+                  id: user.id
+              },
+
+        }, process.env.ACCESS_TOKEN_SECRET, // the accessToken secret key
+            {expiresIn: "1m"} // the time the token will exprire
+        )
+        res.status(200).json({accessToken})
+    } else {
+          res.status(401) // it means email or password is not valid
+          throw new Error("Email or password is not valid")
+    }
+    // res.status(200).json({message: "Login the user"})
 })
 
 //@desc Current user info
